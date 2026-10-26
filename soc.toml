@@ -3,3 +3,5 @@
 ["soc"]
 "name" = "sm8250"
 "description" = "Qualcomm SM8250 / SM8250-AC (kona)"
+"source_repository" = "https://github.com/torvalds/linux"
+"source_revision" = "5b0764a53235d3c77e1ed674e836e1b3fe1a4b1f"

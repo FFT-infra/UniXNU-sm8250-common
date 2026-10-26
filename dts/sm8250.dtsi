@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
-// Qualcomm SM8250 (kona) shared hardware description.
+// Qualcomm SM8250 / SM8250-AC (kona) shared hardware description.
 //
-// Values come from the SM8250 public device trees and were measured on the
-// Redmi K40 (alioth). Board memory, reserved regions and peripheral policy
-// belong in the board DTS.
+// Register ranges and compatible strings come from
+// arch/arm64/boot/dts/qcom/sm8250.dtsi at revision
+// 5b0764a53235d3c77e1ed674e836e1b3fe1a4b1f of torvalds/linux. Board memory,
+// reserved regions and peripheral policy belong in the board DTS.
 
 / {
     compatible = "qcom,sm8250";
@@ -37,7 +38,8 @@
         #size-cells = <2>;
         ranges;
 
-        // GICv3 without virtual LPIs: two 64 KiB frames per core.
+        // GICv3 without virtual LPIs: one 64 KiB distributor frame and eight
+        // 128 KiB redistributor frames.
         gic: interrupt-controller@17a00000 {
             compatible = "arm,gic-v3";
             unixnu,adt-name = "intc";
@@ -51,7 +53,7 @@
         // UFS host controller and PHY. The board enables them when its
         // storage component is selected.
         ufs: ufshc@1d84000 {
-            compatible = "qcom,sm8250-ufshc";
+            compatible = "qcom,sm8250-ufshc", "qcom,ufshc";
             unixnu,adt-name = "ufshc";
             reg = <0 0x1d84000 0 0x3000>;
             status = "disabled";
@@ -60,23 +62,35 @@
         ufsphy: phy@1d87000 {
             compatible = "qcom,sm8250-qmp-ufs-phy";
             unixnu,adt-name = "ufsphy";
-            reg = <0 0x1d87000 0 0x1c0>;
+            reg = <0 0x1d87000 0 0x1000>;
             status = "disabled";
         };
 
-        // Adreno 650 and its SMMU. The board enables them when a GPU
-        // component with A650 scope is selected.
+        // Adreno 650, its GMU and its SMMU. The board enables them when a
+        // GPU component with A650 scope is selected.
         gpu: gpu@3d00000 {
-            compatible = "qcom,adreno-650.0", "qcom,adreno";
+            compatible = "qcom,adreno-650.2", "qcom,adreno";
             reg = <0 0x3d00000 0 0x40000>, <0 0x3d9e000 0 0x1000>, <0 0x3d61000 0 0x800>;
             reg-names = "kgsl_3d0_reg_memory", "cx_mem", "cx_dbgc";
             interrupts = <0 300 4 0>;
+            iommus = <&gpu_smmu 0 0x401>;
+            status = "disabled";
+        };
+
+        gmu: gmu@3d6a000 {
+            compatible = "qcom,adreno-gmu-650.2", "qcom,adreno-gmu";
+            reg = <0 0x3d6a000 0 0x30000>, <0 0x3de0000 0 0x10000>,
+                  <0 0xb290000 0 0x10000>, <0 0xb490000 0 0x10000>;
+            reg-names = "gmu", "rscc", "gmu_pdc", "gmu_pdc_seq";
+            interrupts = <0 304 4 0>, <0 305 4 0>;
+            interrupt-names = "hfi", "gmu";
+            iommus = <&gpu_smmu 5 0x400>;
             status = "disabled";
         };
 
         gpu_smmu: iommu@3da0000 {
-            compatible = "qcom,sm8250-smmu-500", "arm,mmu-500";
-            reg = <0 0x3da0000 0 0x20000>;
+            compatible = "qcom,sm8250-smmu-500", "qcom,adreno-smmu", "arm,mmu-500";
+            reg = <0 0x3da0000 0 0x10000>;
             #iommu-cells = <2>;
             #global-interrupts = <2>;
             status = "disabled";
@@ -87,8 +101,9 @@
         qupv3_id_0: geniqup@9c0000 {
             compatible = "qcom,geni-se-qup";
             reg = <0 0x9c0000 0 0x6000>;
-            #address-cells = <1>;
-            #size-cells = <1>;
+            #address-cells = <2>;
+            #size-cells = <2>;
+            ranges;
             status = "disabled";
         };
     };
