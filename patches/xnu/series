@@ -1,1 +1,3 @@
 # SoC patch paths, one per line in application order.
+native-smp-secondary.patch
+native-smp-type-clusters.patch
