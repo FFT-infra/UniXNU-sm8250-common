@@ -18,7 +18,7 @@ Qualcomm SM8xxx architectural counter.
 | `soc.toml` | SoC name, description, hardware source and component selection |
 | `dts/sm8250.dtsi` | CPU topology, GICv3, timer, UFS, GPU and QUPv3 register ranges |
 | `configs/sm8250.config` | Kernel config fragment applied before the device defconfig |
-| `patches/xnu/series` | SoC XNU patches in application order (empty: no SoC patch yet) |
+| `patches/xnu/series` | Two SoC XNU patches, in order: `native-smp-secondary.patch` (MPIDR numbering for kona's Affinity1 core ids, which raises `MAX_CPUS` to 8) then `native-smp-type-clusters.patch` (lets the topology parser take the E/P split from `unixnu,cluster-type`) |
 | `kits/Sm8250Platform/` | Adreno 650 GMU cold start (`A650Gmu*`) and the CX power, GPU clock and AOP command-DB layer it needs (`A650GmuPower*`), taken from the SM8250 + A650 port at [UniXNU-pipa](https://github.com/xVanTuring/UniXNU-pipa) and host-tested here |
 
 Build through the [UniXNU CLI](https://unixnu.com/building).
